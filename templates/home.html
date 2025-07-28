@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>🔨 Welcome Worker {{ request.user.first_name|default:request.user.username }}</h1>
+
+<p><a href="{% url 'my_shifts' %}">View My Shifts</a></p>
+<p><a href="{% url 'my_availability' %}">My Availability</a></p>
+
+<form method="post" action="{% url 'logout' %}">
+  {% csrf_token %}
+  <button type="submit">Logout</button>
+</form>
+{% endblock %}

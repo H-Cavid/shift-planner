@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Shifts</title>
+</head>
+<body>
+    <h1>🛠️ Hello {{ request.user.username }}! Here are your shifts:</h1>
+
+    {% if shifts %}
+        <ul>
+            {% for shift in shifts %}
+                <li>
+                    📅 {{ shift.date|date:"M. d, Y" }} |
+                    ⏰ {{ shift.start_time|time:"H:i" }} - {{ shift.end_time|time:"H:i" }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have no assigned shifts yet.</p>
+    {% endif %}
+
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+</body>
+</html>

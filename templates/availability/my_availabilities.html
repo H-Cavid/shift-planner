@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>My Availability</h2>
+
+<a href="{% url 'availability_create' %}">+ Add Availability</a>
+
+<table border="1" cellspacing="0" cellpadding="6">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Start Time</th>
+      <th>End Time</th>
+      <th>Note</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for a in availabilities %}
+    <tr>
+      <td>{{ a.date }}</td>
+      <td>{{ a.start_time|time:"H:i" }}</td>
+      <td>{{ a.end_time|time:"H:i" }}</td>      
+      <td>{{ a.note }}</td>
+      <td>
+        <a href="{% url 'availability_update' a.pk %}">Edit</a> |
+        <a href="{% url 'availability_delete' a.pk %}">Delete</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="5">You haven’t added any availability yet.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
