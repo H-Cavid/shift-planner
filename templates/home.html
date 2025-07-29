@@ -1,13 +1,28 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>🔨 Welcome Worker {{ request.user.first_name|default:request.user.username }}</h1>
+  <h1>
+    {% if user.role == 'manager' or user.is_superuser %}
+      👔 Welcome Manager {{ user.first_name|default:user.username }}
+    {% else %}
+      🔨 Welcome Worker {{ user.first_name|default:user.username }}
+    {% endif %}
+  </h1>
 
-<p><a href="{% url 'my_shifts' %}">View My Shifts</a></p>
-<p><a href="{% url 'my_availability' %}">My Availability</a></p>
+  {% if user.role == 'manager' or user.is_superuser %}
+    <p>📘 You are logged in as a Manager</p>
+    <a href="/admin/scheduler/shift/add/">
+      <button style="padding: 10px 20px; font-size: 16px;">➕ Give Shifts</button>
+    </a>
+  {% else %}
+    <p>🛠️ You are logged in as a Worker</p>
+    <p><a href="{% url 'my_shifts' %}">📅 View My Shifts</a></p>
+    <p><a href="{% url 'my_availability' %}">📆 My Availability</a></p>
+  {% endif %}
 
-<form method="post" action="{% url 'logout' %}">
-  {% csrf_token %}
-  <button type="submit">Logout</button>
-</form>
+  <br>
+  <form method="post" action="{% url 'logout' %}">
+    {% csrf_token %}
+    <button type="submit">Logout</button>
+  </form>
 {% endblock %}

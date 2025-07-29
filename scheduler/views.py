@@ -40,7 +40,16 @@ from django.contrib.auth.decorators import login_required
 def home_view(request):
     return render(request, 'home.html')
 
+# def home_view(request):
+#     # Send managers to their dashboard; workers to their home (or shifts)
+#     if request.user.role == 'manager':
+#         return redirect('manager_dashboard')
+#     return render(request, 'home.html')   # worker landing page
 
+
+@login_required
+def manager_dashboard(request):
+    return render(request, 'manager/dashboard.html')
 
 from django.contrib.auth.decorators import login_required
 from .models import Shift
