@@ -2,37 +2,16 @@
 {% load static %}
 
 {% block content %}
-  <h2>🗓️ Assign Multiple Shifts</h2>
+  <h2>👩‍💼 Manager Dashboard</h2>
 
-  <form method="post">
-    {% csrf_token %}
-    {{ formset.management_form }}
-
-    <table border="1" cellpadding="10" cellspacing="0">
-      <thead>
-        <tr style="background-color: #f0f0f0;">
-          <th>👤 Worker</th>
-          <th>📅 Date</th>
-          <th>🕐 Start Time</th>
-          <th>🕓 End Time</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for form in formset %}
-          <tr>
-            <td>{{ form.worker }}</td>
-            <td>{{ form.date }}</td>
-            <td>{{ form.start_time }}</td>
-            <td>{{ form.end_time }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-
-    <br>
-    <button type="submit" style="padding: 10px 20px;">✅ Assign All Shifts</button>
-  </form>
-
-  <br><br>
-  <a href="{% url 'home' %}">🔙 Back to Dashboard</a>
+  <ul>
+    <li><a href="{% url 'assign_multiple_shifts' %}">📋 Assign Multiple Shifts</a></li>
+    <li><a href="{% url 'export_shifts_excel' %}">📥 Export Shifts to Excel</a></li>
+    <li><a href="{% url 'export_shifts_pdf' %}">📄 Export Shifts to PDF</a></li>
+    <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">🚪 Logout</button>
+      </form>
+      
+  </ul>
 {% endblock %}

@@ -26,6 +26,11 @@
 <h3>📊 Total Hours Worked: {{ total_duration }} h</h3>
 <h3>💵 Total Paid Hours (Planstunden): {{ total_paid }} h</h3>
 
+<a href="{% url 'export_my_shifts_excel' %}">
+    <button>📥 Export My Shifts to Excel</button>
+</a>
+
+
 <form method="post" action="{% url 'logout' %}">
   {% csrf_token %}
   <button type="submit">Logout</button>

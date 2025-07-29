@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        th, td { border: 1px solid #444; padding: 6px; text-align: center; }
+        th { background-color: #f0f0f0; }
+        h2, h3 { text-align: center; }
+        .total-row { font-weight: bold; background-color: #eaeaea; }
+    </style>
+</head>
+<body>
+    {% load custom_filters %}
+
+    <h2>Shifts Report</h2>
+
+    {% for worker in shifts_by_worker %}
+    <h3>{{ worker }}</h3>
+
+    {% with shifts_by_worker|dict_key:worker as data %}
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Duration (hrs)</th>
+                <th>Paid Hours (€)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for shift in data.shifts %}
+            <tr>
+                <td>{{ shift.date }}</td>
+                <td>{{ shift.start }}</td>
+                <td>{{ shift.end }}</td>
+                <td>{{ shift.duration }}</td>
+                <td>{{ shift.paid }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="total-row">
+                <td colspan="3">Total</td>
+                <td>{{ data.total_hours|floatformat:1 }}</td>
+                <td>{{ data.total_paid|floatformat:1 }}</td>
+            </tr>
+        </tbody>
+    </table>
+    {% endwith %}
+{% endfor %}
