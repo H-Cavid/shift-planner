@@ -1,27 +1,32 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>My Shifts</title>
-</head>
-<body>
-    <h1>🛠️ Hello {{ request.user.username }}! Here are your shifts:</h1>
+<h2>🛠️ Hello {{ user.first_name }}! Here are your shifts:</h2>
 
-    {% if shifts %}
-        <ul>
-            {% for shift in shifts %}
-                <li>
-                    📅 {{ shift.date|date:"M. d, Y" }} |
-                    ⏰ {{ shift.start_time|time:"H:i" }} - {{ shift.end_time|time:"H:i" }}
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>You have no assigned shifts yet.</p>
-    {% endif %}
+<table border="1" cellpadding="8" cellspacing="0">
+  <thead>
+    <tr style="background:#f0f0f0;">
+      <th>📅 Date</th>
+      <th>⏰ Start</th>
+      <th>⏳ End</th>
+      <th>🕐 Raw Duration</th>
+      <th>💰 Paid Hours</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for shift in shifts %}
+      <tr>
+        <td>{{ shift.date }}</td>
+        <td>{{ shift.start_time|time:"H:i" }}</td>
+        <td>{{ shift.end_time|time:"H:i" }}</td>        
+        <td>{{ shift.duration_hours }} h</td>
+        <td>{{ shift.paid_hours }} h</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
 
-    <form method="post" action="{% url 'logout' %}">
-        {% csrf_token %}
-        <button type="submit">Logout</button>
-    </form>
-</body>
-</html>
+<h3>📊 Total Hours Worked: {{ total_duration }} h</h3>
+<h3>💵 Total Paid Hours (Planstunden): {{ total_paid }} h</h3>
+
+<form method="post" action="{% url 'logout' %}">
+  {% csrf_token %}
+  <button type="submit">Logout</button>
+</form>

@@ -102,3 +102,21 @@ class AvailabilityForm(forms.ModelForm):
 
             if overlaps.exists():
                 raise ValidationError("This availability overlaps with an existing one.")
+
+
+from django import forms
+from .models import Shift
+
+class ShiftForm(forms.ModelForm):
+    class Meta:
+        model = Shift
+        fields = ['worker', 'date', 'start_time', 'end_time']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date'}),
+            'start_time': forms.TimeInput(attrs={'type': 'time'}),
+            'end_time': forms.TimeInput(attrs={'type': 'time'}),
+        }
+
+
+
+

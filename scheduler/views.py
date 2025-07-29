@@ -54,13 +54,29 @@ def manager_dashboard(request):
 from django.contrib.auth.decorators import login_required
 from .models import Shift
 
+# @login_required
+# def my_shifts_view(request):
+#     if request.user.role != 'worker':
+#         return redirect('home')  # or raise permission error
+
+#     shifts = Shift.objects.filter(worker=request.user).order_by('date', 'start_time')
+#     return render(request, 'my_shifts.html', {'shifts': shifts})
+
 @login_required
 def my_shifts_view(request):
     if request.user.role != 'worker':
-        return redirect('home')  # or raise permission error
+        return redirect('home')
 
     shifts = Shift.objects.filter(worker=request.user).order_by('date', 'start_time')
-    return render(request, 'my_shifts.html', {'shifts': shifts})
+
+    total_paid = sum(shift.paid_hours() for shift in shifts)
+    total_duration = sum(shift.duration_hours() for shift in shifts)
+
+    return render(request, 'my_shifts.html', {
+        'shifts': shifts,
+        'total_paid': total_paid,
+        'total_duration': total_duration
+    })
 
 
 
@@ -162,3 +178,26 @@ class AvailabilityDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_queryset(self):
         return Availability.objects.filter(worker=self.request.user)
+
+
+from django.forms import modelformset_factory
+from django.contrib.admin.views.decorators import staff_member_required
+from .models import Shift
+from .forms import ShiftForm
+
+@staff_member_required  # only manager/superuser can access
+def assign_multiple_shifts_view(request):
+    ShiftFormSet = modelformset_factory(Shift, form=ShiftForm, extra=5, can_delete=False)
+
+    if request.method == 'POST':
+        formset = ShiftFormSet(request.POST)
+        if formset.is_valid():
+            instances = formset.save(commit=False)
+            for shift in instances:
+                shift.created_by = request.user
+                shift.save()
+            return redirect('home')
+    else:
+        formset = ShiftFormSet(queryset=Shift.objects.none())  # show empty forms
+
+    return render(request, 'assign_multiple_shifts.html', {'formset': formset})

@@ -20,6 +20,8 @@ class CustomUser(AbstractUser):
 
 from django.db import models
 from django.conf import settings
+from datetime import datetime
+
 
 class Shift(models.Model):
     worker = models.ForeignKey(
@@ -42,7 +44,13 @@ class Shift(models.Model):
     def __str__(self):
         return f"{self.worker.username} | {self.date} | {self.start_time}–{self.end_time}"
     
+    def duration_hours(self):
+        delta = datetime.combine(datetime.today(), self.end_time) - datetime.combine(datetime.today(), self.start_time)
+        return round(delta.total_seconds() / 3600, 2)
 
+    def paid_hours(self):
+        duration = self.duration_hours()
+        return round(duration - 0.5, 2) if duration > 6 else duration
 
 
 # from django.db import models
@@ -106,5 +114,7 @@ class Availability(models.Model):
 
     def __str__(self):
         return f"{self.worker} — {self.date} {self.start_time}-{self.end_time}"
+
+
 
 

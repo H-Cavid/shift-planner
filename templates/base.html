@@ -3,9 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <title>Dashboard</title>
+  <!-- Flatpickr CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 <body>
+
   {% block content %}
   {% endblock %}
+
+  <!-- Flatpickr JS - Moved after block content -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <script>
+    flatpickr("input[type='date']", {
+      dateFormat: "Y-m-d"
+    });
+
+    flatpickr("input[name$='start_time'], input[name$='end_time']", {
+      enableTime: true,
+      noCalendar: true,
+      dateFormat: "H:i",
+      time_24hr: true
+    });
+  </script>
 </body>
 </html>
