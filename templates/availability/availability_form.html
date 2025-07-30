@@ -1,10 +1,40 @@
-{% extends "home.html" %}
+{% extends 'base.html' %}
+
 {% block content %}
-<h2>{% if object %}Edit{% else %}Add{% endif %} Availability</h2>
-<form method="post">
+  <h2>Add Availability</h2>
+
+  <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a href="{% url 'my_availability' %}" class="btn btn-secondary">Cancel</a>
-</form>
+    <table>
+      {{ form.as_table }}
+    </table>
+
+    <br>
+    <button type="submit" style="padding: 6px 15px;">✅ Save</button>
+    <a href="{% url 'my_availability' %}" style="margin-left: 10px;">❌ Cancel</a>
+    <a href="{% url 'home' %}" style="margin-left: 30px; color: #007bff;">🏠 Back to Homepage</a>
+  </form>
+
+  <style>
+    input[type="text"], input[type="time"] {
+      width: 300px;
+      padding: 6px;
+    }
+  
+    textarea[name="note"] {
+      width: 500px;
+      height: 120px;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+      resize: vertical;
+    }
+  
+    table td {
+      padding: 6px 12px;
+      vertical-align: top;
+    }
+  </style>
+  
 {% endblock %}

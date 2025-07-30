@@ -14,7 +14,7 @@ from .views import (
 from .views import assign_multiple_shifts_view
 from django.contrib.auth.views import LoginView
 
-from .views import export_shifts_pdf, export_my_shifts_pdf
+from .views import export_shifts_pdf, export_my_shifts_pdf, manager_view_availability
 
 from . import views
 
@@ -36,5 +36,6 @@ urlpatterns = [
     path('export/my-shifts/excel/', views.export_my_shifts_excel, name='export_my_shifts_excel'),
     path('export/my-shifts/pdf/', export_my_shifts_pdf, name='export_my_shifts_pdf'),  # ← Add this line
     # path('filter-by-date/', views.filter_by_date, name='filter_by_date')
+    path('manager/availability/', manager_view_availability, name='manager_view_availability'),
 
 ]

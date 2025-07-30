@@ -72,7 +72,12 @@ class AvailabilityForm(forms.ModelForm):
             'date': forms.DateInput(attrs={'type': 'date'}),
             'start_time': forms.TimeInput(attrs={'type': 'time', 'step': 60}, format='%H:%M'),
             'end_time': forms.TimeInput(attrs={'type': 'time', 'step': 60}, format='%H:%M'),
-            'note': forms.TextInput(attrs={'placeholder': 'Optional note...'}),
+            # 'note': forms.TextInput(attrs={'placeholder': 'Optional note...'}),
+            'note': forms.Textarea(attrs={
+                'placeholder': 'Optional note...',
+                'rows': 5,
+                'style': 'width: 500px; height: 120px; padding: 10px; font-size: 14px; border-radius: 6px;'
+            }),
         }
 
     def __init__(self, *args, **kwargs):

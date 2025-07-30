@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>📅 Workers' Availabilities</h2>
+
+  <!-- Filter Form -->
+  <form method="get" style="margin-bottom: 20px;">
+    <label for="worker">🔍 Filter by Worker:</label>
+    <select name="worker" id="worker" onchange="this.form.submit()">
+      <option value="">-- Show All --</option>
+      {% for worker in all_workers %}
+        <option value="{{ worker.id }}" {% if worker.id == selected_worker_id %}selected{% endif %}>
+          {{ worker.get_full_name|default:worker.username }}
+        </option>
+      {% endfor %}
+    </select>
+  </form>
+
+  <!-- Availabilities Table -->
+  <table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+      <tr>
+        <th>👤 Worker</th>
+        <th>📆 Date</th>
+        <th>🕐 Start Time</th>
+        <th>🕒 End Time</th>
+        <th>📝 Note</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in availabilities %}
+        <tr>
+          <td>{{ item.worker.get_full_name|default:item.worker.username }}</td>
+          <td>{{ item.date }}</td>
+          <td>{{ item.start_time }}</td>
+          <td>{{ item.end_time }}</td>
+          <td>{{ item.note|default:"-" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5">No availabilities found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <br>
+  <a href="{% url 'manager_dashboard' %}">⬅️ Back to Dashboard</a>
+{% endblock %}

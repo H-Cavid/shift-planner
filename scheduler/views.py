@@ -196,6 +196,42 @@ def manager_dashboard(request):
     })
 
 
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .models import Availability
+
+def is_manager(user):
+    return user.is_authenticated and user.role == 'manager'
+
+# @login_required
+# @user_passes_test(is_manager)
+# def manager_view_availability(request):
+#     all_availabilities = Availability.objects.select_related('worker').order_by('date', 'start_time')
+#     return render(request, 'manager/view_availability.html', {
+#         'availabilities': all_availabilities
+#     })
+
+from django.contrib.auth import get_user_model
+
+@login_required
+@user_passes_test(is_manager)
+def manager_view_availability(request):
+    User = get_user_model()
+    selected_worker_id = request.GET.get('worker')
+
+    if selected_worker_id:
+        availabilities = Availability.objects.filter(worker_id=selected_worker_id).order_by('date', 'start_time')
+    else:
+        availabilities = Availability.objects.all().order_by('date', 'start_time')
+
+    all_workers = User.objects.filter(role='worker')
+
+    return render(request, 'manager/view_availability.html', {
+        'availabilities': availabilities,
+        'all_workers': all_workers,
+        'selected_worker_id': int(selected_worker_id) if selected_worker_id else None,
+    })
+
+
 
 
 # # scheduler/views.py
