@@ -30,6 +30,11 @@
     <button>📥 Export My Shifts to Excel</button>
 </a>
 
+<form method="get" action="{% url 'export_my_shifts_pdf' %}">
+    <button type="submit">🧾 Export My Shifts to PDF</button>
+</form>
+
+
 
 <form method="post" action="{% url 'logout' %}">
   {% csrf_token %}

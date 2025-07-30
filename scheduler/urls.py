@@ -14,7 +14,7 @@ from .views import (
 from .views import assign_multiple_shifts_view
 from django.contrib.auth.views import LoginView
 
-from .views import export_shifts_pdf
+from .views import export_shifts_pdf, export_my_shifts_pdf
 
 from . import views
 
@@ -33,6 +33,7 @@ urlpatterns = [
     path('my-availability/<int:pk>/delete/', AvailabilityDeleteView.as_view(), name='availability_delete'),
     path('export/shifts/excel/', export_shifts_excel, name='export_shifts_excel'),
     path('export/shifts/pdf/', export_shifts_pdf, name='export_shifts_pdf'),
-    path('export/my-shifts/excel/', views.export_my_shifts_excel, name='export_my_shifts_excel')
+    path('export/my-shifts/excel/', views.export_my_shifts_excel, name='export_my_shifts_excel'),
+    path('export/my-shifts/pdf/', export_my_shifts_pdf, name='export_my_shifts_pdf')  # ← Add this line
 
 ]
