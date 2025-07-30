@@ -65,11 +65,160 @@ def home_view(request):
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
-@login_required
+
+# bu asagidaki isiyirdi
+# @login_required
+# def manager_dashboard(request):
+#     if request.user.role != 'manager':
+#         return redirect('home')
+#     return render(request, 'manager_dashboard.html')  # make sure this is correct
+
+from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from .models import Shift
+
+# bu hisse isdiyir graphic gosterir
+# @login_required
+# def manager_dashboard(request):
+#     if request.user.role != 'manager':
+#         return redirect('home')
+
+#     User = get_user_model()
+#     workers = User.objects.filter(role='worker')
+
+#     worker_names = []
+#     total_paid_hours = []
+
+#     for worker in workers:
+#         shifts = Shift.objects.filter(worker=worker)
+#         total = sum([s.paid_hours() for s in shifts])
+#         worker_names.append(worker.username)
+#         total_paid_hours.append(round(total, 1))
+
+#     return render(request, 'manager_dashboard.html', {
+#         'worker_names': worker_names,
+#         'paid_hours': total_paid_hours,
+#     })
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from .models import Shift
+from collections import defaultdict
+
+# bu asagidaki isdeyir qrafiknen textnen bir yerde
+
+# @login_required
+# def manager_dashboard(request):
+#     if request.user.role != 'manager':
+#         return redirect('home')
+
+#     workers_data = defaultdict(lambda: [])
+
+#     for shift in Shift.objects.all().order_by('worker__username', 'date'):
+#         duration = shift.paid_hours()
+#         workers_data[shift.worker.username].append({
+#             'date': shift.date.strftime('%Y-%m-%d'),
+#             'paid': duration
+#         })
+
+#     return render(request, 'manager_dashboard.html', {
+#         'workers_data': dict(workers_data)
+#     })
+
+from collections import defaultdict
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Shift
+from django.utils.dateparse import parse_date
+# bu asagidaki isleyir gunlernen bir yerde
+# @login_required 
+# def manager_dashboard(request):
+#     if request.user.role != 'manager':
+#         return redirect('home')
+
+#     # 📊 Existing chart logic
+#     workers_data = defaultdict(lambda: [])
+#     for shift in Shift.objects.all().order_by('worker__username', 'date'):
+#         duration = shift.paid_hours()
+#         workers_data[shift.worker.username].append({
+#             'date': shift.date.strftime('%Y-%m-%d'),
+#             'paid': duration
+#         })
+
+#     # 📅 New: Date filter logic
+#     date_filter = request.GET.get('date')
+#     shifts_on_date = []
+#     if date_filter:
+#         parsed_date = parse_date(date_filter)
+#         shifts_on_date = Shift.objects.filter(date=parsed_date).select_related('worker')
+
+#     return render(request, 'manager_dashboard.html', {
+#         'workers_data': dict(workers_data),
+#         'shifts_on_date': shifts_on_date,
+#         'date_filter': date_filter  # Pass it back to fill the input
+#     })
+
+from django.contrib.auth import get_user_model
+from collections import defaultdict
+from datetime import datetime
+
+@login_required 
 def manager_dashboard(request):
     if request.user.role != 'manager':
         return redirect('home')
-    return render(request, 'manager_dashboard.html')  # make sure this is correct
+
+    User = get_user_model()
+    date_filter = request.GET.get('date')  # e.g. '2025-08-01'
+    shifts_on_date = []
+    free_workers = []
+
+    if date_filter:
+        shifts_on_date = Shift.objects.filter(date=date_filter).select_related('worker')
+        working_users = [shift.worker for shift in shifts_on_date]
+        free_workers = User.objects.filter(role='worker').exclude(id__in=[user.id for user in working_users])
+    else:
+        shifts_on_date = []
+
+    # Bar chart data
+    workers_data = defaultdict(list)
+    for shift in Shift.objects.all().order_by('worker__username', 'date'):
+        workers_data[shift.worker.username].append({
+            'date': shift.date.strftime('%Y-%m-%d'),
+            'paid': shift.paid_hours()
+        })
+
+    return render(request, 'manager_dashboard.html', {
+        'workers_data': dict(workers_data),
+        'shifts_on_date': shifts_on_date,
+        'free_workers': free_workers,
+        'date_filter': date_filter,
+    })
+
+
+
+
+# # scheduler/views.py
+# from django.shortcuts import render
+# from .models import Shift
+
+# @login_required
+# def filter_by_date(request):
+#     workers_on_date = []
+#     selected_date = None
+
+#     if request.method == 'POST':
+#         selected_date = request.POST.get('shift_date')
+#         if selected_date:
+#             shifts = Shift.objects.filter(date=selected_date)
+#             workers_on_date = [shift.worker for shift in shifts]
+
+#     return render(request, 'filter_by_date.html', {
+#         'workers': workers_on_date,
+#         'selected_date': selected_date
+#     })
+
+
 
 
 from django.contrib.auth.decorators import login_required
@@ -567,3 +716,5 @@ def export_my_shifts_pdf(request):
         return HttpResponse("PDF generation error", status=500)
 
     return response
+
+

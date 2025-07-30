@@ -2,16 +2,142 @@
 {% load static %}
 
 {% block content %}
-  <h2>👩‍💼 Manager Dashboard</h2>
+<h2>👩‍💼 Manager Dashboard</h2>
 
-  <ul>
-    <li><a href="{% url 'assign_multiple_shifts' %}">📋 Assign Multiple Shifts</a></li>
-    <li><a href="{% url 'export_shifts_excel' %}">📥 Export Shifts to Excel</a></li>
-    <li><a href="{% url 'export_shifts_pdf' %}">📄 Export Shifts to PDF</a></li>
-    <form method="post" action="{% url 'logout' %}">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger">🚪 Logout</button>
-      </form>
-      
+<ul>
+  <li><a href="{% url 'assign_multiple_shifts' %}">📋 Assign Multiple Shifts</a></li>
+  <li><a href="{% url 'export_shifts_excel' %}">📥 Export Shifts to Excel</a></li>
+  <li><a href="{% url 'export_shifts_pdf' %}">📄 Export Shifts to PDF</a></li>
+
+</ul>
+
+<!-- 📅 Date filter form -->
+<form method="get" style="margin-top: 20px;">
+    <label for="date">Select Date:</label>
+    <input type="date" name="date" id="date" value="{{ date_filter }}">
+    <button type="submit">🔍 Show Shifts</button>
+  </form>
+  
+
+<!-- Filter Section -->
+<div style="margin-top: 20px; text-align: center;">
+  <label for="worker-select"><strong>Select Worker:</strong></label>
+  <select id="worker-select" style="margin-right: 10px;">
+    <option value="" disabled selected>Choose a worker</option>
+    {% for worker in workers_data.keys %}
+      <option value="{{ worker }}">{{ worker }}</option>
+    {% endfor %}
+  </select>
+  <button onclick="updateChart()">📊 View Chart</button>
+</div>
+
+<!-- Chart Section -->
+<div style="display: flex; justify-content: center; margin-top: 30px;">
+  <canvas id="workerChart" width="800" height="400"></canvas>
+</div>
+
+<!-- Total Hours Display -->
+<div id="totalHoursDisplay" style="text-align: center; font-size: 18px; font-weight: bold; margin-top: 15px;"></div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  const allData = {{ workers_data|safe }};
+  let chart;
+
+  function updateChart() {
+    const selected = document.getElementById('worker-select').value;
+    if (!selected || !allData[selected]) return;
+
+    const labels = allData[selected].map(item => item.date);
+    const paidHours = allData[selected].map(item => item.paid);
+    const total = paidHours.reduce((sum, val) => sum + val, 0);
+
+    const ctx = document.getElementById('workerChart').getContext('2d');
+    if (chart) chart.destroy();  // Clear old chart
+
+    chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: `Paid Hours for ${selected}`,
+          data: paidHours,
+          backgroundColor: 'rgba(75, 192, 192, 0.6)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: false,  // Force fixed size
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Hours'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Date'
+            }
+          }
+        }
+      }
+    });
+
+    document.getElementById('totalHoursDisplay').innerHTML = 
+      `✅ <span style="color: green;">Total Paid Hours for ${selected}: ${total.toFixed(1)} h</span>`;
+  }
+</script>
+
+
+{% if shifts_on_date %}
+  <h3>🗓 Shifts on {{ date_filter }}</h3>
+  <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+    <thead>
+      <tr style="background-color: #f0f0f0;">
+        <th style="border: 1px solid #ccc; padding: 8px;">Worker</th>
+        <th style="border: 1px solid #ccc; padding: 8px;">Date</th>
+        <th style="border: 1px solid #ccc; padding: 8px;">Start Time</th>
+        <th style="border: 1px solid #ccc; padding: 8px;">End Time</th>
+        <th style="border: 1px solid #ccc; padding: 8px;">Planned Hours</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for shift in shifts_on_date %}
+      <tr>
+        <td style="border: 1px solid #ccc; padding: 8px;">{{ shift.worker.username }}</td>
+        <td style="border: 1px solid #ccc; padding: 8px;">{{ shift.date }}</td>
+        <td style="border: 1px solid #ccc; padding: 8px;">{{ shift.start_time }}</td>
+        <td style="border: 1px solid #ccc; padding: 8px;">{{ shift.end_time }}</td>
+        <td style="border: 1px solid #ccc; padding: 8px;">{{ shift.paid_hours }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% elif date_filter %}
+  <p style="color: gray;">No shifts found for {{ date_filter }}.</p>
+{% endif %}
+
+{% if free_workers %}
+  <h3>📞 Free Workers on {{ date_filter }}</h3>
+  <ul style="margin-left: 20px;">
+    {% for worker in free_workers %}
+      <li>{{ worker.get_full_name|default:worker.username }}</li>
+    {% endfor %}
   </ul>
+{% endif %}
+
+
+
+<!-- Logout -->
+<form method="post" action="{% url 'logout' %}" style="margin-top: 30px; text-align: center;">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">🚪 Logout</button>
+</form>
+
 {% endblock %}

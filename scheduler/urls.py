@@ -34,6 +34,7 @@ urlpatterns = [
     path('export/shifts/excel/', export_shifts_excel, name='export_shifts_excel'),
     path('export/shifts/pdf/', export_shifts_pdf, name='export_shifts_pdf'),
     path('export/my-shifts/excel/', views.export_my_shifts_excel, name='export_my_shifts_excel'),
-    path('export/my-shifts/pdf/', export_my_shifts_pdf, name='export_my_shifts_pdf')  # ← Add this line
+    path('export/my-shifts/pdf/', export_my_shifts_pdf, name='export_my_shifts_pdf'),  # ← Add this line
+    # path('filter-by-date/', views.filter_by_date, name='filter_by_date')
 
 ]
