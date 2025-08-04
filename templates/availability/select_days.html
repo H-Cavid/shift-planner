@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 style="margin-bottom: 5px;">Select Days You Are ❌ NOT Available</h2>
+<h3>{{ today|date:"F Y" }}</h3>
+
+
+<!-- Weekday headers -->
+<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; max-width: 500px; font-weight: bold; text-align: center;">
+  <div>M</div>
+  <div>T</div>
+  <div>W</div>
+  <div>T</div>
+  <div>F</div>
+  <div>S</div>
+  <div>S</div>
+</div>
+
+<!-- Calendar grid -->
+<div id="calendar" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; max-width: 500px; margin-top: 10px;"></div>
+
+<!-- Summary -->
+<p id="summary" style="margin-top: 15px; font-weight: bold;"></p>
+
+<!-- Form -->
+<form method="post" action="">
+  {% csrf_token %}
+  <input type="hidden" name="unavailable_days" id="unavailable_days">
+  <button type="submit" style="margin-top: 20px; padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 6px;">
+    ✅ Save Availability
+  </button>
+</form>
+
+<!-- Confirmation -->
+{% if submitted_at %}
+  <hr style="margin-top: 30px;">
+  <h3>✅ You submitted your availability on {{ submitted_at|date:"F d, Y" }} at {{ submitted_at|time:"H:i" }}</h3>
+
+  <p><strong>❌ You are NOT available on:</strong></p>
+  <ul>
+    {% for d in unavailable_dates %}
+      <li>{{ d|date:"F j, Y" }}</li>
+    {% empty %}
+      <li>None</li>
+    {% endfor %}
+  </ul>
+
+  <p><strong>✅ You are available on:</strong></p>
+  <ul>
+    {% for d in available_dates %}
+      <li>{{ d|date:"F j, Y" }}</li>
+    {% empty %}
+      <li>None</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<br><br>
+<a href="{% url 'my_availability' %}" class="btn">
+  🗓️ Back to My Availability
+</a>
+
+
+<style>
+    .btn {
+      display: inline-block;
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .btn:hover {
+      background-color: #45a049;
+    }
+  </style>
+  
+
+
+<!-- ✅ Preloaded unavailable dates as JS array -->
+{% if unavailable_dates %}
+  <script>
+    const preloadedUnavailable = [
+      {% for d in unavailable_dates %}
+        "{{ d|date:'Y-m-d' }}"{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ];
+  </script>
+{% else %}
+  <script>
+    const preloadedUnavailable = [];
+  </script>
+{% endif %}
+
+<!-- JavaScript -->
+<script>
+  const today = new Date("{{ today|date:'Y-m-d' }}");
+  const year = today.getFullYear();
+  const month = today.getMonth(); // 0-based
+
+  const calendarDiv = document.getElementById("calendar");
+  const unavailable = new Set();
+
+  // Preload previous unavailability
+  preloadedUnavailable.forEach(d => unavailable.add(d));
+
+  // Days in month
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDay = new Date(year, month, 1).getDay();
+
+  let startIndex = (firstDay + 6) % 7;
+  for (let i = 0; i < startIndex; i++) {
+    const empty = document.createElement("div");
+    calendarDiv.appendChild(empty);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, month, day);
+    const iso = date.toISOString().split("T")[0];
+    const dayDiv = document.createElement("div");
+
+    dayDiv.textContent = day;
+    dayDiv.dataset.date = iso;
+    dayDiv.style.cursor = "pointer";
+    dayDiv.style.textAlign = "center";
+    dayDiv.style.padding = "12px";
+    dayDiv.style.borderRadius = "50%";
+    dayDiv.style.color = "white";
+    dayDiv.style.fontWeight = "bold";
+
+    // Set color based on preloaded data
+    if (unavailable.has(iso)) {
+      dayDiv.style.backgroundColor = "#dc3545"; // red
+    } else {
+      dayDiv.style.backgroundColor = "#28a745"; // green
+    }
+
+    dayDiv.onclick = () => {
+      if (unavailable.has(iso)) {
+        unavailable.delete(iso);
+        dayDiv.style.backgroundColor = "#28a745"; // green
+      } else {
+        unavailable.add(iso);
+        dayDiv.style.backgroundColor = "#dc3545"; // red
+      }
+
+      document.getElementById("unavailable_days").value = Array.from(unavailable).join(",");
+
+      document.getElementById("summary").textContent =
+        unavailable.size > 0
+          ? `You marked ${unavailable.size} day(s) as NOT available.`
+          : `You're available all days.`;
+    };
+
+    calendarDiv.appendChild(dayDiv);
+  }
+</script>
+
+{% endblock %}

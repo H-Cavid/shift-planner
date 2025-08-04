@@ -232,6 +232,209 @@ def manager_view_availability(request):
     })
 
 
+# from django.shortcuts import render
+# from datetime import date
+
+# @login_required
+# def availability_calendar_view(request):
+#     today = date.today()
+#     return render(request, 'availability/select_days.html', {'today': today})
+
+from django.shortcuts import render
+from datetime import date, datetime, timedelta, time
+from .models import Availability
+from django.utils.dateparse import parse_date
+from django.contrib.auth.decorators import login_required
+
+# @login_required
+# def availability_calendar_view(request):
+#     today = date.today()
+#     year = today.year
+#     month = today.month
+
+#     # Get all days in the current month
+#     first_day = date(year, month, 1)
+#     last_day = date(year, month + 1, 1) - timedelta(days=1) if month < 12 else date(year + 1, 1, 1) - timedelta(days=1)
+
+#     all_dates = [first_day + timedelta(days=i) for i in range((last_day - first_day).days + 1)]
+
+#     unavailable_dates = []
+#     available_dates = []
+#     submitted_at = None
+
+#     if request.method == 'POST':
+#         unavailable_str = request.POST.get('unavailable_days', '')
+#         unavailable_dates = [parse_date(d) for d in unavailable_str.split(',') if d]
+
+#         available_dates = [d for d in all_dates if d not in unavailable_dates]
+
+#         # 🔄 Remove old availability entries for this month
+#         Availability.objects.filter(worker=request.user, date__range=(first_day, last_day)).delete()
+
+#         # ❌ Save unavailable entries (dummy times)
+#         for d in unavailable_dates:
+#             Availability.objects.create(
+#                 worker=request.user,
+#                 date=d,
+#                 start_time=time(0, 0),
+#                 end_time=time(0, 1),
+#                 note='Not available'
+#             )
+
+#         # ✅ Save available entries (default 12:00–22:00)
+#         for d in available_dates:
+#             Availability.objects.create(
+#                 worker=request.user,
+#                 date=d,
+#                 start_time=time(12, 0),
+#                 end_time=time(22, 0),
+#                 note='Available (default)'
+#             )
+
+#         submitted_at = datetime.now()
+
+#     return render(request, 'availability/select_days.html', {
+#         'today': today,
+#         'submitted_at': submitted_at,
+#         'available_dates': available_dates,
+#         'unavailable_dates': unavailable_dates,
+#     })
+from django.shortcuts import render
+from datetime import date, datetime, timedelta, time
+from .models import Availability
+from django.utils.dateparse import parse_date
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def availability_calendar_view(request):
+    today = date.today()
+    year = today.year
+    month = today.month
+
+    # Get the first and last day of the current month
+    first_day = date(year, month, 1)
+    last_day = date(year, month + 1, 1) - timedelta(days=1) if month < 12 else date(year + 1, 1, 1) - timedelta(days=1)
+
+    # Generate all dates in the month
+    all_dates = [first_day + timedelta(days=i) for i in range((last_day - first_day).days + 1)]
+
+    unavailable_dates = []
+    available_dates = []
+    submitted_at = None
+
+    if request.method == 'POST':
+        unavailable_str = request.POST.get('unavailable_days', '')
+        unavailable_dates = [parse_date(d) for d in unavailable_str.split(',') if d]
+
+        # All other dates are considered available
+        available_dates = [d for d in all_dates if d not in unavailable_dates]
+
+        # Remove any previous availability entries for this month for this user
+        Availability.objects.filter(worker=request.user, date__range=(first_day, last_day)).delete()
+
+        # Save ❌ unavailable dates (dummy time to avoid error)
+        # for d in unavailable_dates:
+        #     Availability.objects.create(
+        #         worker=request.user,
+        #         date=d,
+        #         start_time=time(0, 0),  # <- required to avoid NULL error
+        #         end_time=time(0, 1),
+        #         note='Not available'
+        #     )
+
+        from datetime import time  # make sure this is at the top of views.py
+
+        # Save ❌ unavailable entries safely (with dummy times)
+        for d in unavailable_dates:
+            if d is not None:
+                Availability.objects.create(
+                    worker=request.user,
+                    date=d,
+                    start_time=time(0, 0),   # ✅ dummy time
+                    end_time=time(0, 1),
+                    note='Not available'
+                )
+
+
+        # Save ✅ available dates with default working hours
+        for d in available_dates:
+            Availability.objects.create(
+                worker=request.user,
+                date=d,
+                start_time=time(12, 0),
+                end_time=time(22, 0),
+                note='Available (default)'
+            )
+
+        submitted_at = datetime.now()
+
+    return render(request, 'availability/select_days.html', {
+        'today': today,
+        'submitted_at': submitted_at,
+        'available_dates': available_dates,
+        'unavailable_dates': unavailable_dates,
+    })
+
+
+
+from datetime import date, datetime, timedelta
+from .models import Availability
+
+
+from django.contrib import messages
+from django.utils.dateparse import parse_date
+
+# @login_required
+# def availability_calendar_view(request):
+#     today = date.today()
+#     year = today.year
+#     month = today.month
+
+#     # Get all dates of this month
+#     first_day = date(year, month, 1)
+#     last_day = date(year, month + 1, 1) - timedelta(days=1) if month < 12 else date(year + 1, 1, 1) - timedelta(days=1)
+
+#     all_dates = [first_day + timedelta(days=i) for i in range((last_day - first_day).days + 1)]
+
+#     unavailable_dates = []
+#     available_dates = []
+#     submitted_at = None
+
+#     if request.method == 'POST':
+#         unavailable_str = request.POST.get('unavailable_days', '')
+#         unavailable_dates = [parse_date(d) for d in unavailable_str.split(',') if d]
+
+#         available_dates = [d for d in all_dates if d not in unavailable_dates]
+
+#         # Delete old entries for this user and month (prevent duplicates)
+#         Availability.objects.filter(worker=request.user, date__range=(first_day, last_day)).delete()
+
+#         # Save unavailable entries
+#         for d in unavailable_dates:
+#             Availability.objects.create(
+#                 worker=request.user,
+#                 date=d,
+#                 note='Not available'
+#             )
+
+#         # Save available entries (default hours: 12:00–22:00)
+#         for d in available_dates:
+#             Availability.objects.create(
+#                 worker=request.user,
+#                 date=d,
+#                 start_time=datetime.strptime("12:00", "%H:%M").time(),
+#                 end_time=datetime.strptime("22:00", "%H:%M").time(),
+#                 note='Available (default)'
+#             )
+
+#         submitted_at = datetime.now()
+
+#     return render(request, 'availability/select_days.html', {
+#         'today': today,
+#         'submitted_at': submitted_at,
+#         'available_dates': available_dates,
+#         'unavailable_dates': unavailable_dates
+#     })
 
 
 # # scheduler/views.py

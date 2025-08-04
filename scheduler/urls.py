@@ -18,6 +18,9 @@ from .views import export_shifts_pdf, export_my_shifts_pdf, manager_view_availab
 
 from . import views
 
+from .views import availability_calendar_view
+
+
 
 urlpatterns = [
     path('', home_view, name='home'),  # this is the homepage now
@@ -37,5 +40,6 @@ urlpatterns = [
     path('export/my-shifts/pdf/', export_my_shifts_pdf, name='export_my_shifts_pdf'),  # ← Add this line
     # path('filter-by-date/', views.filter_by_date, name='filter_by_date')
     path('manager/availability/', manager_view_availability, name='manager_view_availability'),
+    path('my-availability/calendar/', availability_calendar_view, name='availability_calendar')
 
 ]
